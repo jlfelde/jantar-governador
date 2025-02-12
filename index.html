@@ -74,14 +74,18 @@
 
                     <label class="form-label mt-2">Prato Principal: *</label>
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input prato" value="48"> <label class="form-check-label">Risoto caprese - R$48</label><br>
-                        <input type="checkbox" class="form-check-input prato" value="52"> <label class="form-check-label">Ancho grelhado com batatas rústicas - R$52</label>
+                        <input type="checkbox" class="form-check-input prato" value="48"> 
+                        <label class="form-check-label">Risoto caprese - R$48</label><br>
+                        <input type="checkbox" class="form-check-input prato" value="52"> 
+                        <label class="form-check-label">Ancho grelhado com batatas rústicas - R$52</label>
                     </div>
 
                     <label class="form-label mt-2">Sobremesa (opcional):</label>
                     <div class="form-check">
-                        <input type="checkbox" class="form-check-input sobremesa" value="22"> <label class="form-check-label">Cheesecake - R$22</label><br>
-                        <input type="checkbox" class="form-check-input sobremesa" value="28"> <label class="form-check-label">Crème brûlée - R$28</label>
+                        <input type="checkbox" class="form-check-input sobremesa" value="22"> 
+                        <label class="form-check-label">Cheesecake - R$22</label><br>
+                        <input type="checkbox" class="form-check-input sobremesa" value="28"> 
+                        <label class="form-check-label">Crème brûlée - R$28</label>
                     </div>
                 </div>
             </div>
@@ -155,8 +159,19 @@
             let listaSobremesas = [];
 
             nomes.forEach(nome => listaNomes.push(nome.value));
-            pratosSelecionados.forEach(prato => listaPratos.push(prato.nextSibling.textContent.trim()));
-            sobremesasSelecionadas.forEach(sobremesa => listaSobremesas.push(sobremesa.nextSibling.textContent.trim()));
+            // Usando nextElementSibling para obter o label corretamente
+            pratosSelecionados.forEach(prato => {
+                let label = prato.nextElementSibling;
+                if (label) {
+                    listaPratos.push(label.textContent.trim());
+                }
+            });
+            sobremesasSelecionadas.forEach(sobremesa => {
+                let label = sobremesa.nextElementSibling;
+                if (label) {
+                    listaSobremesas.push(label.textContent.trim());
+                }
+            });
 
             let valorTotal = calcularTotal();
 
