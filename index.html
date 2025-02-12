@@ -1,204 +1,273 @@
 <!DOCTYPE html>
 <html lang="pt">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jantar da visita do Governador do Distrito</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
-    <style>
-        body {
-            background: linear-gradient(135deg, #7A2682, #4B1050);
-            font-family: 'Arial', sans-serif;
-            padding: 20px;
-        }
-        .container {
-            max-width: 600px;
-            background: white;
-            padding: 25px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
-            text-align: left;
-        }
-        h2 {
-            color: #7A2682;
-            font-weight: bold;
-        }
-        h4 {
-            margin-top: 30px;
-        }
-        .form-check {
-            padding: 10px 0;
-        }
-        .form-check-input {
-            transform: scale(1.3);
-            margin-right: 10px;
-        }
-        .qrcode-container {
-            text-align: center;
-            margin-top: 30px;
-        }
-        #qrcode {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        #pixCopiaCola {
-            font-weight: bold;
-            text-align: center;
-            margin-top: 15px;
-            word-break: break-word;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Jantar da visita do Governador do Distrito</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/qrcodejs/qrcode.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #7A2682, #4B1050);
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .container {
+      max-width: 600px;
+      background: white;
+      padding: 25px;
+      border-radius: 10px;
+      box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      text-align: left;
+    }
+    h2 {
+      color: #7A2682;
+      font-weight: bold;
+    }
+    h4 {
+      margin-top: 30px;
+    }
+    .form-check {
+      margin-bottom: 10px;
+      padding-left: 20px;
+    }
+    .form-check-input {
+      transform: scale(1.3);
+      margin-right: 10px;
+    }
+    .qrcode-container {
+      text-align: center;
+      margin-top: 30px;
+    }
+    #qrcode {
+      display: flex;
+      justify-content: center;
+      margin-top: 20px;
+    }
+    #pixCopiaCola {
+      font-weight: bold;
+      text-align: center;
+      margin-top: 15px;
+      word-break: break-word;
+    }
+    .convidado-form {
+      margin-bottom: 20px;
+      border: 1px solid #ddd;
+      padding: 15px;
+      border-radius: 5px;
+    }
+  </style>
 </head>
 <body>
 
-    <div class="container">
-        <h2>Jantar da visita do Governador do Distrito</h2>
+  <div class="container">
+    <h2>Jantar da visita do Governador do Distrito</h2>
 
-        <div id="descricao">
-            <h4>Prato Principal</h4>
-            <p><strong>Risoto caprese - R$ 48</strong><br>Risoto com muçarela de búfala, tomate cereja, molho pesto e queijo parmesão.</p>
-            <p><strong>Ancho grelhado com batatas rústicas - R$ 52</strong><br>Ancho com batatas rústicas, alho assado e molho chimichurri.</p>
+    <div id="descricao">
+      <h4>Prato Principal</h4>
+      <p><strong>Risoto caprese - R$ 48</strong><br>Risoto com muçarela de búfala, tomate cereja, molho pesto e queijo parmesão.</p>
+      <p><strong>Ancho grelhado com batatas rústicas - R$ 52</strong><br>Ancho com batatas rústicas, alho assado e molho chimichurri.</p>
 
-            <h4>Sobremesas</h4>
-            <p><strong>Cheesecake com geléia de frutas vermelhas - R$ 22</strong></p>
-            <p><strong>Crème brûlée de doce de leite - R$ 28</strong></p>
-        </div>
-
-        <form id="jantarForm">
-            <div id="convidadosContainer">
-                <div class="convidado-form border p-3 rounded">
-                    <label class="form-label">Nome: *</label>
-                    <input type="text" class="form-control nome" required>
-
-                    <label class="form-label mt-2">Prato Principal: *</label>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input prato" value="48"> 
-                        <label class="form-check-label">Risoto caprese - R$48</label><br>
-                        <input type="checkbox" class="form-check-input prato" value="52"> 
-                        <label class="form-check-label">Ancho grelhado com batatas rústicas - R$52</label>
-                    </div>
-
-                    <label class="form-label mt-2">Sobremesa (opcional):</label>
-                    <div class="form-check">
-                        <input type="checkbox" class="form-check-input sobremesa" value="22"> 
-                        <label class="form-check-label">Cheesecake - R$22</label><br>
-                        <input type="checkbox" class="form-check-input sobremesa" value="28"> 
-                        <label class="form-check-label">Crème brûlée - R$28</label>
-                    </div>
-                </div>
-            </div>
-
-            <button type="button" class="btn btn-outline-dark mt-3" onclick="adicionarConvidado()">+ Adicionar Convidado</button>
-            <button type="button" class="btn btn-primary mt-3" onclick="validarEConfirmar()">Confirmar e Gerar Pix</button>
-        </form>
-
-        <div id="qrcode-container" class="qrcode-container" style="display:none;">
-            <h4>Total: R$ <span id="totalValor">0.00</span></h4>
-            <div id="qrcode"></div>
-            <p id="pixCopiaCola">Pix copia e cola: <br><span id="pixCode"></span></p>
-        </div>
+      <h4>Sobremesas</h4>
+      <p><strong>Cheesecake com geléia de frutas vermelhas - R$ 22</strong></p>
+      <p><strong>Crème brûlée de doce de leite - R$ 28</strong></p>
     </div>
 
-    <script>
-        function validarEConfirmar() {
-            let nomes = document.querySelectorAll(".nome");
-            for (let nome of nomes) {
-                if (nome.value.trim() === "") {
-                    alert("O campo 'Nome' é obrigatório.");
-                    return;
-                }
-            }
+    <form id="jantarForm">
+      <div id="convidadosContainer">
+        <div class="convidado-form" data-guest="1">
+          <label class="form-label">Nome: *</label>
+          <input type="text" class="form-control nome" required>
 
-            let pratosSelecionados = document.querySelectorAll(".prato:checked");
-            if (pratosSelecionados.length === 0) {
-                alert("É obrigatório selecionar pelo menos um prato principal.");
-                return;
-            }
+          <label class="form-label mt-2">Prato Principal: *</label>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input prato" value="48" id="prato1">
+            <label class="form-check-label" for="prato1">Risoto caprese - R$48</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input prato" value="52" id="prato2">
+            <label class="form-check-label" for="prato2">Ancho grelhado com batatas rústicas - R$52</label>
+          </div>
 
-            gerarQRCode();
+          <label class="form-label mt-2">Sobremesa (opcional):</label>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input sobremesa" value="22" id="sobremesa1">
+            <label class="form-check-label" for="sobremesa1">Cheesecake - R$22</label>
+          </div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input sobremesa" value="28" id="sobremesa2">
+            <label class="form-check-label" for="sobremesa2">Crème brûlée - R$28</label>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" class="btn btn-outline-dark mt-3" onclick="adicionarConvidado()">+ Adicionar Convidado</button>
+      <button type="button" class="btn btn-primary mt-3" onclick="validarEConfirmar()">Confirmar e Gerar Pix</button>
+    </form>
+
+    <div id="qrcode-container" class="qrcode-container" style="display:none;">
+      <h4>Total: R$ <span id="totalValor">0.00</span></h4>
+      <div id="qrcode"></div>
+      <p id="pixCopiaCola">Pix copia e cola: <br><span id="pixCode"></span></p>
+    </div>
+  </div>
+
+  <script>
+    let guestCount = 1; // contador de convidados
+
+    function validarEConfirmar() {
+      let valid = true;
+      document.querySelectorAll(".convidado-form").forEach(form => {
+        let nome = form.querySelector(".nome").value.trim();
+        if (nome === "") {
+          alert("O campo 'Nome' é obrigatório para todos os convidados.");
+          valid = false;
         }
-
-        function gerarQRCode() {
-            let total = calcularTotal();
-            // Atualiza o total exibido na página
-            document.getElementById("totalValor").textContent = total;
-
-            let pixPayload = `00020126330014BR.GOV.BCB.PIX0114lionsirati@gmail.com5204000053039865802BR5915Colmeia de Ouro6005Irati62070503jantarvisitagov6304`;
-
-            document.getElementById("qrcode-container").style.display = "block";
-            document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), { text: pixPayload, width: 200, height: 200 });
-
-            document.getElementById("pixCode").textContent = pixPayload;
-
-            enviarParaGoogleSheets();
+        // Verifica se ao menos um prato foi selecionado em cada formulário
+        let pratosSelecionados = form.querySelectorAll(".prato:checked");
+        if (pratosSelecionados.length === 0) {
+          alert("Cada convidado deve selecionar pelo menos um prato principal.");
+          valid = false;
         }
+      });
+      if (!valid) return;
 
-        function calcularTotal() {
-            let total = 0;
-            // Soma os valores dos pratos selecionados
-            document.querySelectorAll(".prato:checked").forEach(prato => {
-                total += Number(prato.value);
-            });
-            // Soma os valores das sobremesas selecionadas, se houver
-            document.querySelectorAll(".sobremesa:checked").forEach(sobremesa => {
-                total += Number(sobremesa.value);
-            });
-            return total.toFixed(2); // Formata com duas casas decimais
+      gerarQRCode();
+    }
+
+    function gerarQRCode() {
+      let total = calcularTotal();
+      document.getElementById("totalValor").textContent = total;
+
+      // Atualização do pixpayload conforme solicitado:
+      let pixPayload = `00020126330014BR.GOV.BCB.PIX0114lionsirati@gmail.com5204000053039865802BR5915COLMEIA DE OURO6005IRATI62070503JANTAR VISITA GOV6304`;
+
+      document.getElementById("qrcode-container").style.display = "block";
+      document.getElementById("qrcode").innerHTML = "";
+      new QRCode(document.getElementById("qrcode"), { text: pixPayload, width: 200, height: 200 });
+
+      document.getElementById("pixCode").textContent = pixPayload;
+
+      enviarParaGoogleSheets();
+    }
+
+    function calcularTotal() {
+      let total = 0;
+      document.querySelectorAll(".convidado-form").forEach(form => {
+        form.querySelectorAll(".prato:checked").forEach(input => {
+          total += Number(input.value);
+        });
+        form.querySelectorAll(".sobremesa:checked").forEach(input => {
+          total += Number(input.value);
+        });
+      });
+      return total.toFixed(2);
+    }
+
+    function enviarParaGoogleSheets() {
+      let guestForms = document.querySelectorAll(".convidado-form");
+      let allNames = [];
+      let pratosCount = {};
+      let sobremesasCount = {};
+
+      // Para cada formulário de convidado, agrega os dados
+      guestForms.forEach(form => {
+        let nomeInput = form.querySelector(".nome");
+        if (nomeInput) {
+          allNames.push(nomeInput.value.trim());
         }
+        form.querySelectorAll(".prato:checked").forEach(input => {
+          // Usa o label dentro do mesmo .form-check para garantir o texto correto
+          let label = input.parentElement.querySelector("label");
+          if (label) {
+            let dishText = label.textContent.trim();
+            // Separa para pegar somente o nome (antes do " - ")
+            let dishName = dishText.split(" - ")[0];
+            pratosCount[dishName] = (pratosCount[dishName] || 0) + 1;
+          }
+        });
+        form.querySelectorAll(".sobremesa:checked").forEach(input => {
+          let label = input.parentElement.querySelector("label");
+          if (label) {
+            let dishText = label.textContent.trim();
+            let dishName = dishText.split(" - ")[0];
+            sobremesasCount[dishName] = (sobremesasCount[dishName] || 0) + 1;
+          }
+        });
+      });
 
-        function enviarParaGoogleSheets() {
-            let nomes = document.querySelectorAll(".nome");
-            let pratosSelecionados = document.querySelectorAll(".prato:checked");
-            let sobremesasSelecionadas = document.querySelectorAll(".sobremesa:checked");
+      // Converte os contadores em listas formatadas
+      let pratosList = [];
+      for (let dish in pratosCount) {
+        pratosList.push(pratosCount[dish] + " " + dish);
+      }
+      let sobremesasList = [];
+      for (let dish in sobremesasCount) {
+        sobremesasList.push(sobremesasCount[dish] + " " + dish);
+      }
 
-            let listaNomes = [];
-            let listaPratos = [];
-            let listaSobremesas = [];
+      let valorTotal = calcularTotal();
 
-            nomes.forEach(nome => listaNomes.push(nome.value));
-            // Usando nextElementSibling para obter o label corretamente
-            pratosSelecionados.forEach(prato => {
-                let label = prato.nextElementSibling;
-                if (label) {
-                    listaPratos.push(label.textContent.trim());
-                }
-            });
-            sobremesasSelecionadas.forEach(sobremesa => {
-                let label = sobremesa.nextElementSibling;
-                if (label) {
-                    listaSobremesas.push(label.textContent.trim());
-                }
-            });
+      let formData = new FormData();
+      formData.append("nome", allNames.join(", "));
+      formData.append("pratos", pratosList.join(", "));
+      formData.append("sobremesas", sobremesasList.join(", "));
+      formData.append("valorTotal", valorTotal);
 
-            let valorTotal = calcularTotal();
+      fetch("https://script.google.com/macros/s/AKfycbwYwhF8nQn7Hli82lcJ6olBGRdtYrSGvQqTu4e3TzoMIvbbHLuxAx2OFZTMOErCi4Ie/exec", {
+        method: "POST",
+        body: formData
+      })
+        .then(response => response.text())
+        .then(data => console.log("Dados enviados com sucesso:", data))
+        .catch(error => console.error("Erro ao enviar:", error));
+    }
 
-            let formData = new FormData();
-            formData.append("nome", listaNomes.join(", "));
-            formData.append("pratos", listaPratos.join(", "));
-            formData.append("sobremesas", listaSobremesas.join(", "));
-            formData.append("valorTotal", valorTotal);
+    function adicionarConvidado() {
+      guestCount++;
+      const container = document.getElementById("convidadosContainer");
+      const primeiroConvidado = container.querySelector(".convidado-form");
+      const novoConvidado = primeiroConvidado.cloneNode(true);
 
-            fetch("https://script.google.com/macros/s/AKfycbwYwhF8nQn7Hli82lcJ6olBGRdtYrSGvQqTu4e3TzoMIvbbHLuxAx2OFZTMOErCi4Ie/exec", {
-                method: "POST",
-                body: formData
-            }).then(response => response.text())
-              .then(data => console.log("Dados enviados com sucesso:", data))
-              .catch(error => console.error("Erro ao enviar:", error));
+      // Limpa os inputs: para campos de texto, reseta o valor; para checkboxes, desmarca e atualiza os IDs
+      novoConvidado.querySelectorAll("input").forEach(input => {
+        if (input.type === "text") {
+          input.value = "";
         }
-
-        function adicionarConvidado() {
-            const container = document.getElementById("convidadosContainer");
-            // Clona o primeiro formulário de convidado
-            const primeiroConvidado = container.querySelector(".convidado-form");
-            const novoConvidado = primeiroConvidado.cloneNode(true);
-            // Limpa os valores dos campos do novo formulário
-            novoConvidado.querySelectorAll("input").forEach(input => input.value = "");
-            container.appendChild(novoConvidado);
+        if (input.type === "checkbox") {
+          input.checked = false;
+          // Gera um novo ID único para evitar conflitos
+          let newId = "guest" + guestCount + "_" + Math.random().toString(36).substr(2, 5);
+          input.id = newId;
+          let label = input.parentElement.querySelector("label");
+          if (label) {
+            label.setAttribute("for", newId);
+          }
         }
-    </script>
+      });
+
+      // Se já houver um botão de exclusão, remove-o (para evitar duplicidade)
+      let existingDelete = novoConvidado.querySelector(".btn-danger");
+      if (existingDelete) {
+        existingDelete.remove();
+      }
+
+      // Cria o botão "Excluir Convidado" e adiciona-o ao final do formulário clonado
+      const deleteButton = document.createElement("button");
+      deleteButton.type = "button";
+      deleteButton.textContent = "Excluir Convidado";
+      deleteButton.className = "btn btn-danger mt-2";
+      deleteButton.addEventListener("click", function() {
+        novoConvidado.remove();
+      });
+      novoConvidado.appendChild(deleteButton);
+
+      // Garante um espaçamento entre os formulários
+      novoConvidado.style.marginTop = "20px";
+
+      container.appendChild(novoConvidado);
+    }
+  </script>
 
 </body>
 </html>
