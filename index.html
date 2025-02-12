@@ -118,6 +118,8 @@
 
         function gerarQRCode() {
             let total = calcularTotal();
+            // Atualiza o total exibido na página
+            document.getElementById("totalValor").textContent = total;
 
             let pixPayload = `00020126330014BR.GOV.BCB.PIX0114lionsirati@gmail.com5204000053039865802BR5915Colmeia de Ouro6005Irati62070503jantarvisitagov6304`;
 
@@ -128,6 +130,19 @@
             document.getElementById("pixCode").textContent = pixPayload;
 
             enviarParaGoogleSheets();
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            // Soma os valores dos pratos selecionados
+            document.querySelectorAll(".prato:checked").forEach(prato => {
+                total += Number(prato.value);
+            });
+            // Soma os valores das sobremesas selecionadas, se houver
+            document.querySelectorAll(".sobremesa:checked").forEach(sobremesa => {
+                total += Number(sobremesa.value);
+            });
+            return total.toFixed(2); // Formata com duas casas decimais
         }
 
         function enviarParaGoogleSheets() {
@@ -157,6 +172,16 @@
             }).then(response => response.text())
               .then(data => console.log("Dados enviados com sucesso:", data))
               .catch(error => console.error("Erro ao enviar:", error));
+        }
+
+        function adicionarConvidado() {
+            const container = document.getElementById("convidadosContainer");
+            // Clona o primeiro formulário de convidado
+            const primeiroConvidado = container.querySelector(".convidado-form");
+            const novoConvidado = primeiroConvidado.cloneNode(true);
+            // Limpa os valores dos campos do novo formulário
+            novoConvidado.querySelectorAll("input").forEach(input => input.value = "");
+            container.appendChild(novoConvidado);
         }
     </script>
 
