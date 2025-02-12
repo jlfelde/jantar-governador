@@ -19,6 +19,7 @@
       border-radius: 10px;
       box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
       text-align: left;
+      margin-left: 20px; /* Aumenta a margem à esquerda do formulário */
     }
     h2 {
       color: #7A2682;
@@ -28,8 +29,8 @@
       margin-top: 30px;
     }
     .form-check {
-      margin-bottom: 10px;
-      padding-left: 20px;
+      margin-bottom: 15px;
+      padding-left: 20px; /* Aumenta o recuo das caixas de seleção */
     }
     .form-check-input {
       transform: scale(1.3);
@@ -59,7 +60,6 @@
   </style>
 </head>
 <body>
-
   <div class="container">
     <h2>Jantar da visita do Governador do Distrito</h2>
 
@@ -113,7 +113,7 @@
   </div>
 
   <script>
-    let guestCount = 1; // contador de convidados
+    let guestCount = 1;
 
     function validarEConfirmar() {
       let valid = true;
@@ -123,7 +123,7 @@
           alert("O campo 'Nome' é obrigatório para todos os convidados.");
           valid = false;
         }
-        // Verifica se ao menos um prato foi selecionado em cada formulário
+        // Cada convidado deve selecionar ao menos um prato principal
         let pratosSelecionados = form.querySelectorAll(".prato:checked");
         if (pratosSelecionados.length === 0) {
           alert("Cada convidado deve selecionar pelo menos um prato principal.");
@@ -131,7 +131,6 @@
         }
       });
       if (!valid) return;
-
       gerarQRCode();
     }
 
@@ -139,14 +138,58 @@
       let total = calcularTotal();
       document.getElementById("totalValor").textContent = total;
 
-      // Atualização do pixpayload conforme solicitado:
-      let pixPayload = `00020126330014BR.GOV.BCB.PIX0114lionsirati@gmail.com5204000053039865802BR5915COLMEIA DE OURO6005IRATI62070503JANTAR VISITA GOV6304`;
+      /* 
+         Montagem do payload PIX conforme a especificação:
+         - Tag 00: Payload Format Indicator (valor "01")
+         - Tag 26: Merchant Account Information, com subcampos:
+              • 00: GUI ("BR.GOV.BCB.PIX") com comprimento 14
+              • 01: Chave PIX ("lionsirati@gmail.com") com comprimento 20
+         - Tag 52: Merchant Category Code (fixo "0000")
+         - Tag 53: Transaction Currency (BRL → "986")
+         - Tag 58: Country Code ("BR")
+         - Tag 59: Merchant Name ("COLMEIA DE OURO")
+         - Tag 60: Merchant City ("IRATI")
+         - Tag 62: Additional Data Field Template, com subcampo 05: (ex. "JANTAR VISITA GOV")
+         - Tag 63: CRC, que será calculado dinamicamente.
+      */
+
+      // Tag 00
+      let payload = "000201";
+
+      // Tag 26 – Merchant Account Information
+      let merchantAccountInfo = "0014BR.GOV.BCB.PIX" + "0120lionsirati@gmail.com";
+      payload += "26" + merchantAccountInfo.length.toString().padStart(2, '0') + merchantAccountInfo;
+
+      // Tag 52 – Merchant Category Code (fixo "0000")
+      payload += "52040000";
+
+      // Tag 53 – Transaction Currency ("986")
+      payload += "5303986";
+
+      // Tag 58 – Country Code ("BR")
+      payload += "5802BR";
+
+      // Tag 59 – Merchant Name ("COLMEIA DE OURO")
+      let merchantName = "COLMEIA DE OURO";
+      payload += "59" + merchantName.length.toString().padStart(2, '0') + merchantName;
+
+      // Tag 60 – Merchant City ("IRATI")
+      let merchantCity = "IRATI";
+      payload += "6005" + merchantCity;
+
+      // Tag 62 – Additional Data Field Template com subcampo 05 ("JANTAR VISITA GOV")
+      let additionalData = "05" + "17" + "JANTAR VISITA GOV";
+      payload += "62" + additionalData.length.toString().padStart(2, '0') + additionalData;
+
+      // Tag 63 – CRC; adiciona "6304" e depois calcula o checksum
+      payload += "63" + "04";
+      let crc = crc16(payload);
+      let finalPayload = payload + crc;
 
       document.getElementById("qrcode-container").style.display = "block";
       document.getElementById("qrcode").innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), { text: pixPayload, width: 200, height: 200 });
-
-      document.getElementById("pixCode").textContent = pixPayload;
+      new QRCode(document.getElementById("qrcode"), { text: finalPayload, width: 200, height: 200 });
+      document.getElementById("pixCode").textContent = finalPayload;
 
       enviarParaGoogleSheets();
     }
@@ -170,18 +213,17 @@
       let pratosCount = {};
       let sobremesasCount = {};
 
-      // Para cada formulário de convidado, agrega os dados
+      // Percorre todos os formulários para agregar os dados
       guestForms.forEach(form => {
         let nomeInput = form.querySelector(".nome");
         if (nomeInput) {
           allNames.push(nomeInput.value.trim());
         }
         form.querySelectorAll(".prato:checked").forEach(input => {
-          // Usa o label dentro do mesmo .form-check para garantir o texto correto
+          // Utiliza o label associado para extrair o nome do prato (antes do " - ")
           let label = input.parentElement.querySelector("label");
           if (label) {
             let dishText = label.textContent.trim();
-            // Separa para pegar somente o nome (antes do " - ")
             let dishName = dishText.split(" - ")[0];
             pratosCount[dishName] = (pratosCount[dishName] || 0) + 1;
           }
@@ -196,7 +238,7 @@
         });
       });
 
-      // Converte os contadores em listas formatadas
+      // Converte os contadores em listas formatadas do tipo "X nomedoprato"
       let pratosList = [];
       for (let dish in pratosCount) {
         pratosList.push(pratosCount[dish] + " " + dish);
@@ -218,9 +260,9 @@
         method: "POST",
         body: formData
       })
-        .then(response => response.text())
-        .then(data => console.log("Dados enviados com sucesso:", data))
-        .catch(error => console.error("Erro ao enviar:", error));
+      .then(response => response.text())
+      .then(data => console.log("Dados enviados com sucesso:", data))
+      .catch(error => console.error("Erro ao enviar:", error));
     }
 
     function adicionarConvidado() {
@@ -229,14 +271,13 @@
       const primeiroConvidado = container.querySelector(".convidado-form");
       const novoConvidado = primeiroConvidado.cloneNode(true);
 
-      // Limpa os inputs: para campos de texto, reseta o valor; para checkboxes, desmarca e atualiza os IDs
+      // Limpa os campos de texto e desmarca os checkboxes; também atualiza os IDs para evitar conflito
       novoConvidado.querySelectorAll("input").forEach(input => {
         if (input.type === "text") {
           input.value = "";
         }
         if (input.type === "checkbox") {
           input.checked = false;
-          // Gera um novo ID único para evitar conflitos
           let newId = "guest" + guestCount + "_" + Math.random().toString(36).substr(2, 5);
           input.id = newId;
           let label = input.parentElement.querySelector("label");
@@ -246,13 +287,11 @@
         }
       });
 
-      // Se já houver um botão de exclusão, remove-o (para evitar duplicidade)
+      // Se já existir um botão de exclusão, remove-o (para evitar duplicidade) e adiciona o botão "Excluir Convidado"
       let existingDelete = novoConvidado.querySelector(".btn-danger");
       if (existingDelete) {
         existingDelete.remove();
       }
-
-      // Cria o botão "Excluir Convidado" e adiciona-o ao final do formulário clonado
       const deleteButton = document.createElement("button");
       deleteButton.type = "button";
       deleteButton.textContent = "Excluir Convidado";
@@ -262,12 +301,26 @@
       });
       novoConvidado.appendChild(deleteButton);
 
-      // Garante um espaçamento entre os formulários
       novoConvidado.style.marginTop = "20px";
-
       container.appendChild(novoConvidado);
     }
-  </script>
 
+    // Função para calcular o CRC16-CCITT (padrão PIX)
+    function crc16(payload) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < payload.length; i++) {
+        crc ^= payload.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = (crc << 1) ^ 0x1021;
+          } else {
+            crc <<= 1;
+          }
+          crc &= 0xFFFF;
+        }
+      }
+      return crc.toString(16).toUpperCase().padStart(4, '0');
+    }
+  </script>
 </body>
 </html>
