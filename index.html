@@ -132,7 +132,7 @@
   <script>
     let guestCount = 1;
 
-    // Converte valor com ponto para exibição com vírgula (apenas para UI e envio à planilha)
+    // Converte valor com ponto (para payload) em exibição com vírgula
     function formatDisplayBRL(valueStr) {
       return valueStr.replace(".", ",");
     }
@@ -157,20 +157,18 @@
     }
 
     function gerarQRCode() {
-      let total = calcularTotal(); // valor no padrão dot, ex: "48.00"
+      let total = calcularTotal(); // ex: "48.00"
       document.getElementById("totalValor").textContent = formatDisplayBRL(total);
 
-      // Obtém o nome do primeiro formulário para compor o txid
-      let firstName = document.querySelector(".convidado-form .nome").value.trim();
+      // Obtém o nome do primeiro formulário para compor o txid e remove espaços
+      let firstName = document.querySelector(".convidado-form .nome").value.trim().replace(/\s+/g, "");
       let txidValue = "JantarGov" + firstName;
       
-      // Monta o payload Pix conforme a especificação
-      // Tag 00: Payload Format Indicator ("01")
-      let payload = "000201";
-      // Tag 01: Point of Initiation Method ("12" - dinâmico)
-      payload += "010212";
+      // Monta o payload Pix conforme especificação
+      let payload = "000201";                        // Tag 00: Payload Format Indicator
+      payload += "010212";                           // Tag 01: Point of Initiation Method (dinâmico)
       
-      // Tag 26: Merchant Account Information – subtags 00 (GUI) e 01 (chave)
+      // Tag 26: Merchant Account Information (subtags 00 e 01)
       let gui = "br.gov.bcb.pix";
       let key = "45720052000170";
       let subfield00 = "00" + gui.length.toString().padStart(2, '0') + gui;
@@ -178,33 +176,26 @@
       let merchantAccountInfo = subfield00 + subfield01;
       payload += "26" + merchantAccountInfo.length.toString().padStart(2, '0') + merchantAccountInfo;
       
-      // Tag 52: Merchant Category Code ("0000")
-      payload += "52040000";
-      // Tag 53: Transaction Currency ("986")
-      payload += "5303986";
-      // Tag 54: Transaction Amount (valor com ponto, conforme padrão Pix)
-      payload += "54" + total.length.toString().padStart(2, '0') + total;
-      // Tag 58: Country Code ("BR")
-      payload += "5802BR";
-      // Tag 59: Merchant Name ("LIONS CLUBE DE IRATI")
+      payload += "52040000";                         // Tag 52: Merchant Category Code
+      payload += "5303986";                           // Tag 53: Transaction Currency
+      payload += "54" + total.length.toString().padStart(2, '0') + total;  // Tag 54: Transaction Amount
+      payload += "5802BR";                            // Tag 58: Country Code
       let merchantName = "LIONS CLUBE DE IRATI";
-      payload += "59" + merchantName.length.toString().padStart(2, '0') + merchantName;
-      // Tag 60: Merchant City ("IRATI")
+      payload += "59" + merchantName.length.toString().padStart(2, '0') + merchantName;  // Tag 59: Merchant Name
       let merchantCity = "IRATI";
-      payload += "6005" + merchantCity;
+      payload += "6005" + merchantCity;              // Tag 60: Merchant City
       
-      // Tag 62: Additional Data Field Template – inclui o txid na subtag 05
+      // Tag 62: Additional Data Field Template – txid na subtag 05
       let subfield05 = "05" + txidValue.length.toString().padStart(2, '0') + txidValue;
       payload += "62" + subfield05.length.toString().padStart(2, '0') + subfield05;
       
-      // Tag 63: CRC – adiciona "6304" e depois calcula o CRC16-CCITT
+      // Tag 63: CRC – adicionar "6304" e calcular o CRC16-CCITT
       payload += "63" + "04";
       let crc = crc16(payload);
       let finalPayload = payload + crc;
       
       console.log("Payload Pix gerado:", finalPayload);
       
-      // Tenta gerar o QR Code
       try {
         document.getElementById("qrcode-container").style.display = "block";
         document.getElementById("qrcode").innerHTML = "";
@@ -274,7 +265,6 @@
 
       let formData = new FormData();
       let timestamp = new Date().toLocaleString('pt-BR');
-      // Usa "Timestamp" com T maiúsculo para corresponder à coluna na planilha
       formData.append("Timestamp", timestamp);
       formData.append("nome", allNames.join(", "));
       formData.append("pratos", pratosList.join(", "));
