@@ -123,7 +123,7 @@
     </form>
 
     <div id="qrcode-container" class="qrcode-container" style="display:none;">
-      <h4>Total: R$ <span id="totalValor">0.00</span></h4>
+      <h4>Total: R$ <span id="totalValor">0,00</span></h4>
       <div id="qrcode"></div>
       <p id="pixCopiaCola">Pix copia e cola: <br><span id="pixCode"></span></p>
     </div>
@@ -131,6 +131,11 @@
 
   <script>
     let guestCount = 1;
+
+    // Função para converter valor com ponto para vírgula
+    function formatBRL(valueStr) {
+      return valueStr.replace(".", ",");
+    }
 
     function validarEConfirmar() {
       let valid = true;
@@ -152,51 +157,21 @@
     }
 
     function gerarQRCode() {
-      let total = calcularTotal();
-      document.getElementById("totalValor").textContent = total;
+      let total = calcularTotal(); // retorna algo como "48.00"
+      let totalBRL = formatBRL(total); // converte para "48,00"
+      document.getElementById("totalValor").textContent = totalBRL;
 
-      // Obter o nome do primeiro formulário para compor o txid
-      let firstName = document.querySelector(".convidado-form .nome").value.trim();
-      let txid = "JantarGov" + firstName;
+      // Para gerar o QR Code, usaremos apenas a chave pix e o valor
+      let pixKey = "45720052000170";
+      // Payload simples: chave e valor separados por um pipe (pode ser ajustado conforme necessidade)
+      let payload = pixKey + "|" + totalBRL;
 
-      // Dados para a API do PixGratis
-      let pixRequestData = {
-        chave: "45720052000170",
-        valor: total,
-        txid: txid,
-        recebedor: "LIONS CLUBE DE IRATI",
-        cidade: "IRATI",
-        versao: "01"
-      };
+      document.getElementById("qrcode-container").style.display = "block";
+      document.getElementById("qrcode").innerHTML = "";
+      new QRCode(document.getElementById("qrcode"), { text: payload, width: 200, height: 200 });
+      document.getElementById("pixCode").textContent = payload;
 
-      // Endpoint da API do PixGratis (ajuste conforme sua configuração real)
-      let apiEndpoint = "https://api.pixgratis.com/v1/qrcode";
-
-      fetch(apiEndpoint, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(pixRequestData)
-      })
-      .then(response => response.json())
-      .then(data => {
-        if (data.payload) {
-          let finalPayload = data.payload;
-          document.getElementById("qrcode-container").style.display = "block";
-          document.getElementById("qrcode").innerHTML = "";
-          new QRCode(document.getElementById("qrcode"), { text: finalPayload, width: 200, height: 200 });
-          document.getElementById("pixCode").textContent = finalPayload;
-          enviarParaGoogleSheets();
-        } else {
-          console.error("Erro na resposta da API do PixGratis:", data);
-          alert("Erro ao gerar o QR Code Pix. Tente novamente.");
-        }
-      })
-      .catch(error => {
-        console.error("Erro ao chamar a API do PixGratis:", error);
-        alert("Erro ao gerar o QR Code Pix. Tente novamente.");
-      });
+      enviarParaGoogleSheets();
     }
 
     function calcularTotal() {
@@ -209,7 +184,7 @@
           total += Number(input.value);
         });
       });
-      return total.toFixed(2);
+      return total.toFixed(2); // Retorna string com 2 casas decimais, ex: "48.00"
     }
 
     function enviarParaGoogleSheets() {
@@ -251,6 +226,7 @@
       }
 
       let valorTotal = calcularTotal();
+      let valorTotalBRL = formatBRL(valorTotal);
 
       let formData = new FormData();
       let timestamp = new Date().toLocaleString('pt-BR');
@@ -258,7 +234,7 @@
       formData.append("nome", allNames.join(", "));
       formData.append("pratos", pratosList.join(", "));
       formData.append("sobremesas", sobremesasList.join(", "));
-      formData.append("valorTotal", valorTotal);
+      formData.append("valorTotal", valorTotalBRL);
 
       fetch("https://script.google.com/macros/s/AKfycbwYwhF8nQn7Hli82lcJ6olBGRdtYrSGvQqTu4e3TzoMIvbbHLuxAx2OFZTMOErCi4Ie/exec", {
         method: "POST",
