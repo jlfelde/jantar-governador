@@ -132,8 +132,8 @@
   <script>
     let guestCount = 1;
 
-    // Função para converter valor com ponto para vírgula
-    function formatBRL(valueStr) {
+    // Função para converter valor de dot para BRL com vírgula para exibição (apenas para UI)
+    function formatDisplayBRL(valueStr) {
       return valueStr.replace(".", ",");
     }
 
@@ -157,20 +157,58 @@
     }
 
     function gerarQRCode() {
-      let total = calcularTotal(); // retorna algo como "48.00"
-      let totalBRL = formatBRL(total); // converte para "48,00"
-      document.getElementById("totalValor").textContent = totalBRL;
+      let total = calcularTotal(); // valor em dot, ex: "48.00"
+      document.getElementById("totalValor").textContent = formatDisplayBRL(total);
 
-      // Para gerar o QR Code, usaremos apenas a chave pix e o valor
-      let pixKey = "45720052000170";
-      // Payload simples: chave e valor separados por um pipe (pode ser ajustado conforme necessidade)
-      let payload = pixKey + "|" + totalBRL;
-
+      // Obter o nome do primeiro formulário para compor o txid
+      let firstName = document.querySelector(".convidado-form .nome").value.trim();
+      let txidValue = "JantarGov" + firstName;
+      
+      // Monta o Payload Pix conforme padrão
+      // Tag 00: Payload Format Indicator "01"
+      let payload = "000201";
+      // Tag 01: Point of Initiation Method "12" (dinâmico)
+      payload += "010212";
+      
+      // Tag 26: Merchant Account Information
+      // Subtag 00: GUI "br.gov.bcb.pix"
+      // Subtag 01: Chave Pix "45720052000170"
+      let gui = "br.gov.bcb.pix";
+      let key = "45720052000170";
+      let subfield00 = "00" + gui.length.toString().padStart(2, '0') + gui;
+      let subfield01 = "01" + key.length.toString().padStart(2, '0') + key;
+      let merchantAccountInfo = subfield00 + subfield01;
+      payload += "26" + merchantAccountInfo.length.toString().padStart(2, '0') + merchantAccountInfo;
+      
+      // Tag 52: Merchant Category Code ("0000")
+      payload += "52040000";
+      // Tag 53: Transaction Currency ("986")
+      payload += "5303986";
+      // Tag 54: Transaction Amount (usando valor com ponto, conforme padrão)
+      payload += "54" + total.length.toString().padStart(2, '0') + total;
+      // Tag 58: Country Code ("BR")
+      payload += "5802BR";
+      // Tag 59: Merchant Name ("LIONS CLUBE DE IRATI")
+      let merchantName = "LIONS CLUBE DE IRATI";
+      payload += "59" + merchantName.length.toString().padStart(2, '0') + merchantName;
+      // Tag 60: Merchant City ("IRATI")
+      let merchantCity = "IRATI";
+      payload += "6005" + merchantCity;
+      
+      // Tag 62: Additional Data Field Template – incluir txid na subtag 05
+      let subfield05 = "05" + txidValue.length.toString().padStart(2, '0') + txidValue;
+      payload += "62" + subfield05.length.toString().padStart(2, '0') + subfield05;
+      
+      // Tag 63: CRC – adicionar "6304" e calcular o CRC16-CCITT
+      payload += "63" + "04";
+      let crc = crc16(payload);
+      let finalPayload = payload + crc;
+      
       document.getElementById("qrcode-container").style.display = "block";
       document.getElementById("qrcode").innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), { text: payload, width: 200, height: 200 });
-      document.getElementById("pixCode").textContent = payload;
-
+      new QRCode(document.getElementById("qrcode"), { text: finalPayload, width: 200, height: 200 });
+      document.getElementById("pixCode").textContent = finalPayload;
+      
       enviarParaGoogleSheets();
     }
 
@@ -184,7 +222,7 @@
           total += Number(input.value);
         });
       });
-      return total.toFixed(2); // Retorna string com 2 casas decimais, ex: "48.00"
+      return total.toFixed(2); // valor com ponto como separador (ex: "48.00")
     }
 
     function enviarParaGoogleSheets() {
@@ -226,7 +264,8 @@
       }
 
       let valorTotal = calcularTotal();
-      let valorTotalBRL = formatBRL(valorTotal);
+      // Para o envio à planilha, usamos o valor formatado com vírgula
+      let valorTotalDisplay = formatDisplayBRL(valorTotal);
 
       let formData = new FormData();
       let timestamp = new Date().toLocaleString('pt-BR');
@@ -234,7 +273,7 @@
       formData.append("nome", allNames.join(", "));
       formData.append("pratos", pratosList.join(", "));
       formData.append("sobremesas", sobremesasList.join(", "));
-      formData.append("valorTotal", valorTotalBRL);
+      formData.append("valorTotal", valorTotalDisplay);
 
       fetch("https://script.google.com/macros/s/AKfycbwYwhF8nQn7Hli82lcJ6olBGRdtYrSGvQqTu4e3TzoMIvbbHLuxAx2OFZTMOErCi4Ie/exec", {
         method: "POST",
@@ -281,6 +320,23 @@
 
       novoConvidado.style.marginTop = "20px";
       container.appendChild(novoConvidado);
+    }
+
+    // Função para calcular o CRC16-CCITT (padrão Pix)
+    function crc16(payload) {
+      let crc = 0xFFFF;
+      for (let i = 0; i < payload.length; i++) {
+        crc ^= payload.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+          if ((crc & 0x8000) !== 0) {
+            crc = (crc << 1) ^ 0x1021;
+          } else {
+            crc <<= 1;
+          }
+          crc &= 0xFFFF;
+        }
+      }
+      return crc.toString(16).toUpperCase().padStart(4, '0');
     }
   </script>
 </body>
