@@ -132,7 +132,7 @@
   <script>
     let guestCount = 1;
 
-    // Função para converter valor de dot para BRL com vírgula para exibição (apenas para UI)
+    // Função para converter valor com ponto (para o payload e envio) para exibição com vírgula
     function formatDisplayBRL(valueStr) {
       return valueStr.replace(".", ",");
     }
@@ -157,22 +157,20 @@
     }
 
     function gerarQRCode() {
-      let total = calcularTotal(); // valor em dot, ex: "48.00"
+      let total = calcularTotal(); // retorna valor em ponto, ex: "48.00"
       document.getElementById("totalValor").textContent = formatDisplayBRL(total);
 
-      // Obter o nome do primeiro formulário para compor o txid
+      // Obtém o nome do primeiro formulário para compor o txid
       let firstName = document.querySelector(".convidado-form .nome").value.trim();
       let txidValue = "JantarGov" + firstName;
       
-      // Monta o Payload Pix conforme padrão
+      // Monta o payload Pix conforme especificação:
       // Tag 00: Payload Format Indicator "01"
       let payload = "000201";
       // Tag 01: Point of Initiation Method "12" (dinâmico)
       payload += "010212";
       
-      // Tag 26: Merchant Account Information
-      // Subtag 00: GUI "br.gov.bcb.pix"
-      // Subtag 01: Chave Pix "45720052000170"
+      // Tag 26: Merchant Account Information (subtags 00 e 01)
       let gui = "br.gov.bcb.pix";
       let key = "45720052000170";
       let subfield00 = "00" + gui.length.toString().padStart(2, '0') + gui;
@@ -184,7 +182,7 @@
       payload += "52040000";
       // Tag 53: Transaction Currency ("986")
       payload += "5303986";
-      // Tag 54: Transaction Amount (usando valor com ponto, conforme padrão)
+      // Tag 54: Transaction Amount (valor em padrão dot, ex: "48.00")
       payload += "54" + total.length.toString().padStart(2, '0') + total;
       // Tag 58: Country Code ("BR")
       payload += "5802BR";
@@ -222,7 +220,7 @@
           total += Number(input.value);
         });
       });
-      return total.toFixed(2); // valor com ponto como separador (ex: "48.00")
+      return total.toFixed(2); // ex: "48.00"
     }
 
     function enviarParaGoogleSheets() {
@@ -264,12 +262,12 @@
       }
 
       let valorTotal = calcularTotal();
-      // Para o envio à planilha, usamos o valor formatado com vírgula
       let valorTotalDisplay = formatDisplayBRL(valorTotal);
 
       let formData = new FormData();
       let timestamp = new Date().toLocaleString('pt-BR');
-      formData.append("timestamp", timestamp);
+      // Alterado para "Timestamp" com T maiúsculo para corresponder à coluna da planilha
+      formData.append("Timestamp", timestamp);
       formData.append("nome", allNames.join(", "));
       formData.append("pratos", pratosList.join(", "));
       formData.append("sobremesas", sobremesasList.join(", "));
