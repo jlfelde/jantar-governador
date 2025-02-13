@@ -132,7 +132,7 @@
   <script>
     let guestCount = 1;
 
-    // Função para converter valor com ponto (para o payload e envio) para exibição com vírgula
+    // Converte valor com ponto para exibição com vírgula (apenas para UI e envio à planilha)
     function formatDisplayBRL(valueStr) {
       return valueStr.replace(".", ",");
     }
@@ -157,20 +157,20 @@
     }
 
     function gerarQRCode() {
-      let total = calcularTotal(); // retorna valor em ponto, ex: "48.00"
+      let total = calcularTotal(); // valor no padrão dot, ex: "48.00"
       document.getElementById("totalValor").textContent = formatDisplayBRL(total);
 
       // Obtém o nome do primeiro formulário para compor o txid
       let firstName = document.querySelector(".convidado-form .nome").value.trim();
       let txidValue = "JantarGov" + firstName;
       
-      // Monta o payload Pix conforme especificação:
-      // Tag 00: Payload Format Indicator "01"
+      // Monta o payload Pix conforme a especificação
+      // Tag 00: Payload Format Indicator ("01")
       let payload = "000201";
-      // Tag 01: Point of Initiation Method "12" (dinâmico)
+      // Tag 01: Point of Initiation Method ("12" - dinâmico)
       payload += "010212";
       
-      // Tag 26: Merchant Account Information (subtags 00 e 01)
+      // Tag 26: Merchant Account Information – subtags 00 (GUI) e 01 (chave)
       let gui = "br.gov.bcb.pix";
       let key = "45720052000170";
       let subfield00 = "00" + gui.length.toString().padStart(2, '0') + gui;
@@ -182,7 +182,7 @@
       payload += "52040000";
       // Tag 53: Transaction Currency ("986")
       payload += "5303986";
-      // Tag 54: Transaction Amount (valor em padrão dot, ex: "48.00")
+      // Tag 54: Transaction Amount (valor com ponto, conforme padrão Pix)
       payload += "54" + total.length.toString().padStart(2, '0') + total;
       // Tag 58: Country Code ("BR")
       payload += "5802BR";
@@ -193,19 +193,27 @@
       let merchantCity = "IRATI";
       payload += "6005" + merchantCity;
       
-      // Tag 62: Additional Data Field Template – incluir txid na subtag 05
+      // Tag 62: Additional Data Field Template – inclui o txid na subtag 05
       let subfield05 = "05" + txidValue.length.toString().padStart(2, '0') + txidValue;
       payload += "62" + subfield05.length.toString().padStart(2, '0') + subfield05;
       
-      // Tag 63: CRC – adicionar "6304" e calcular o CRC16-CCITT
+      // Tag 63: CRC – adiciona "6304" e depois calcula o CRC16-CCITT
       payload += "63" + "04";
       let crc = crc16(payload);
       let finalPayload = payload + crc;
       
-      document.getElementById("qrcode-container").style.display = "block";
-      document.getElementById("qrcode").innerHTML = "";
-      new QRCode(document.getElementById("qrcode"), { text: finalPayload, width: 200, height: 200 });
-      document.getElementById("pixCode").textContent = finalPayload;
+      console.log("Payload Pix gerado:", finalPayload);
+      
+      // Tenta gerar o QR Code
+      try {
+        document.getElementById("qrcode-container").style.display = "block";
+        document.getElementById("qrcode").innerHTML = "";
+        new QRCode(document.getElementById("qrcode"), { text: finalPayload, width: 200, height: 200 });
+        document.getElementById("pixCode").textContent = finalPayload;
+      } catch (error) {
+        console.error("Erro na geração do QR Code:", error);
+        alert("Erro ao gerar o QR Code Pix. Tente novamente.");
+      }
       
       enviarParaGoogleSheets();
     }
@@ -266,7 +274,7 @@
 
       let formData = new FormData();
       let timestamp = new Date().toLocaleString('pt-BR');
-      // Alterado para "Timestamp" com T maiúsculo para corresponder à coluna da planilha
+      // Usa "Timestamp" com T maiúsculo para corresponder à coluna na planilha
       formData.append("Timestamp", timestamp);
       formData.append("nome", allNames.join(", "));
       formData.append("pratos", pratosList.join(", "));
